@@ -52,19 +52,21 @@ def create_plot(data):
 
         x_online = online["day_time"].replace(day).values.reshape(len(online["day_time"]), 1)
         y_online = online["transaction_amt"].values
-        model_offline = LinearRegression().fit(x_offline, y_offline)
-        model_online = LinearRegression().fit(x_online, y_online)
+        if np.size(x_offline):
+            model_offline = LinearRegression().fit(x_offline, y_offline)
+        if np.size(x_online):
+            model_online = LinearRegression().fit(x_online, y_online)
 
         fig = go.Figure()
         # offline graph
-        if x_offline:
+        if np.size(x_offline):
             fig.add_trace(go.Scatter(x=key_day, y=model_offline.predict(key), name="offline_regression",
                                      mode='lines+markers',
                                      marker=dict(color='LightSkyBlue')))
             fig.add_trace(go.Scatter(x=offline["day_time"], y=offline["transaction_amt"], mode='markers', name='',
                                      marker=dict(color='LightSkyBlue', size=10, line=dict(color='MediumPurple', width=3))))
         # online graph
-        if x_online:
+        if np.size(x_online):
 
             fig.add_trace(go.Scatter(x=key_day, y=model_online.predict(key), name="online_regression",
                                      mode='lines+markers',
@@ -78,7 +80,7 @@ def create_plot(data):
                           margin=dict(l=0, r=0, t=0, b=0))
         fig.update_traces(hoverinfo="all", hovertemplate="Аргумент: %{x}<br>Функция: %{y}")
         print(mcc)
-        fig.write_image(f"mcc_graphs/{mcc}.png")
+        fig.write_image(f"mcc_graphs/{mcc.replace('/', '|')}.png")
 
 
 create_plot(data)
