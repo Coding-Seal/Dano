@@ -23,4 +23,4 @@ def spending_bars(data):
 
     fig = px.bar(customers, x="customer_id", y="money_spent")
     fig.show()
-    return NOne
+    return None
