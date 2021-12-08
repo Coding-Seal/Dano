@@ -75,12 +75,13 @@ def create_plot(data):
                                      marker=dict(color='Red', size=10, line=dict(color='MediumPurple', width=3))))
 
         fig.update_layout(legend_orientation="h",
-                          legend=dict(x=.5, xanchor="center"),
+                          legend=dict(x=.5, xanchor="center", y=-0.5),
                           hovermode="x",
                           margin=dict(l=0, r=0, t=0, b=0))
         fig.update_traces(hoverinfo="all", hovertemplate="Аргумент: %{x}<br>Функция: %{y}")
         print(mcc)
         fig.write_image(f"mcc_graphs/{mcc.replace('/', '|')}.png")
+
 
 
 create_plot(data)
