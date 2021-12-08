@@ -64,10 +64,10 @@ def create_plot(data):
                                      mode='lines+markers',
                                      marker=dict(color='LightSkyBlue')))
             fig.add_trace(go.Scatter(x=offline["day_time"], y=offline["transaction_amt"], mode='markers', name='',
-                                     marker=dict(color='LightSkyBlue', size=10, line=dict(color='MediumPurple', width=3))))
+                                     marker=dict(color='LightSkyBlue', size=10,
+                                                 line=dict(color='MediumPurple', width=3))))
         # online graph
         if np.size(x_online):
-
             fig.add_trace(go.Scatter(x=key_day, y=model_online.predict(key), name="online_regression",
                                      mode='lines+markers',
                                      marker=dict(color='Red')))
@@ -75,12 +75,18 @@ def create_plot(data):
                                      marker=dict(color='Red', size=10, line=dict(color='MediumPurple', width=3))))
 
         fig.update_layout(legend_orientation="h",
+                          title=dict(text=" и ".join(mcc.split(", ")[:2]),
+                                     xanchor="center",
+                                     x=0.5,
+                                     y=0.99),
                           legend=dict(x=.5, xanchor="center", y=-0.5),
                           hovermode="x",
-                          margin=dict(l=0, r=0, t=0, b=0))
+                          margin=dict(l=0, r=0, t=25, b=0))
         fig.update_traces(hoverinfo="all", hovertemplate="Аргумент: %{x}<br>Функция: %{y}")
         print(mcc)
         fig.write_image(f"mcc_graphs/{mcc.replace('/', '|')}.png")
+        # fig.write_image(f"{mcc.replace('/', '|')}.png")
+        # break
 
 
 
