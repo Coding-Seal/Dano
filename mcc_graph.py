@@ -16,8 +16,8 @@ def data_time(category_data, category, normalize=True):
     online = category_data[category_data["online_transaction_flg"] == "online"]
     offline = category_data[category_data["online_transaction_flg"] == "offline"]
     if normalize:
-        online = online[(np.abs(stats.zscore(category_data["transaction_amt"])) < 3)]
-        offline = offline[(np.abs(stats.zscore(category_data["transaction_amt"])) < 3)]
+        online = online[(np.abs(stats.zscore(online["transaction_amt"])) < 3)]
+        offline = offline[(np.abs(stats.zscore(offline["transaction_amt"])) < 3)]
 
     online = online.groupby("day_time").sum().reset_index()
     offline = offline.groupby("day_time").sum().reset_index()
@@ -79,6 +79,7 @@ def create_plot(data):
                                      xanchor="center",
                                      x=0.5,
                                      y=0.99),
+                          # y_error=dict(),
                           legend=dict(x=.5, xanchor="center", y=-0.5),
                           hovermode="x",
                           margin=dict(l=0, r=0, t=25, b=0))
