@@ -60,7 +60,7 @@ def create_plot(data):
         fig = go.Figure()
         # offline graph
         if np.size(x_offline):
-            fig.add_trace(go.Scatter(x=key_day, y=model_offline.predict(key), name="offline_regression",
+            fig.add_trace(go.Scatter(x=key_day, y=model_offline.predict(key), name="offline_trend",
                                      mode='lines+markers',
                                      marker=dict(color='LightSkyBlue')))
             fig.add_trace(go.Scatter(x=offline["day_time"], y=offline["transaction_amt"], mode='markers', name='',
@@ -68,7 +68,7 @@ def create_plot(data):
                                                  line=dict(color='MediumPurple', width=3))))
         # online graph
         if np.size(x_online):
-            fig.add_trace(go.Scatter(x=key_day, y=model_online.predict(key), name="online_regression",
+            fig.add_trace(go.Scatter(x=key_day, y=model_online.predict(key), name="online_trend",
                                      mode='lines+markers',
                                      marker=dict(color='Red')))
             fig.add_trace(go.Scatter(x=online["day_time"], y=online["transaction_amt"], mode='markers', name='',
