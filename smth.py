@@ -1,9 +1,11 @@
 import numpy as np
 import plotly.express as px
 import pandas as pd
-
+data_i = pd.read_csv("tink.csv")
+m_data = pd.read_csv('modified.csv')
 data = pd.read_csv('modified.csv')
 mcc = pd.read_csv("mcc_code.csv", sep=";", encoding="Windows-1251")
+
 
 mcc = dict(zip(mcc["mcc"], mcc["значение mcc"]))
 
@@ -20,11 +22,15 @@ for code in data["code"].unique():
         data = data[data['code'] != code]
 
 # print(data[data["code"]=="Аэрофлот"][["transaction_amt", "day_time","customer_id"]].reset_index())
-# print(i)
+print(i)
 #
 data = data.reset_index()
 data = data[["online_transaction_flg", "code", "category", "transaction_amt", "customer_id", "day_time"]]
-data.to_csv("final.csv",sep = ";")
+# data.to_csv("final.csv",sep = ";")
+print(len(data_i["code"].unique()))
+print(len(m_data["code"].unique()))
+
+print(len(data["code"].unique()))
 
 # week = ("Понедельник ", "Вторник ", "Среда ", "Четверг ", "Пятница ", "Суббота ", "Воскресенье ")
 #

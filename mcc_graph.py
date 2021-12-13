@@ -8,6 +8,12 @@ from baskets import kras
 data = pd.read_csv("final.csv", sep=";")
 
 
+def quantile_outliers(sample, q25, q75):
+    more = sample["transaction_amt"] >= q25 - 1.5 * (q75 - q25)
+    less = sample["transaction_amt"] <= q75 + 1.5 * (q75 - q25)
+    return sample[more & less]
+
+
 def data_time(category_data, category, normalize=True):
     """Expected data about one category"""
 
@@ -15,9 +21,16 @@ def data_time(category_data, category, normalize=True):
                                    "online_transaction_flg", "day_time"]]
     online = category_data[category_data["online_transaction_flg"] == "online"]
     offline = category_data[category_data["online_transaction_flg"] == "offline"]
+    online_quant75 = online.quantile(0.75).to_dict()["transaction_amt"]
+    online_quant25 = online.quantile(0.25).to_dict()["transaction_amt"]
+    offline_quant75 = offline.quantile(0.75).to_dict()["transaction_amt"]
+    offline_quant25 = offline.quantile(0.25).to_dict()["transaction_amt"]
+
     if normalize:
-        online = online[(np.abs(stats.zscore(online["transaction_amt"])) < 3)]
-        offline = offline[(np.abs(stats.zscore(offline["transaction_amt"])) < 3)]
+        # # online = online[(np.abs(stats.zscore(online["transaction_amt"])) < 3)]
+        # # offline = offline[(np.abs(stats.zscore(offline["transaction_amt"])) < 3)]
+        online = quantile_outliers(online, online_quant25, online_quant75)
+        offline = quantile_outliers(offline, offline_quant25, offline_quant75)
 
     online = online.groupby("day_time").sum().reset_index()
     offline = offline.groupby("day_time").sum().reset_index()
@@ -85,10 +98,10 @@ def create_plot(data):
                           margin=dict(l=0, r=0, t=25, b=0))
         fig.update_traces(hoverinfo="all", hovertemplate="Аргумент: %{x}<br>Функция: %{y}")
         print(mcc)
-        fig.write_image(f"mcc_graphs/{mcc.replace('/', '|')}.png")
+        # fig.write_image(f"mcc_graphs/{mcc.replace('/', '|')}.png")
         # fig.write_image(f"{mcc.replace('/', '|')}.png")
-        # break
-
+        fig.show()
+        break
 
 
 create_plot(data)
