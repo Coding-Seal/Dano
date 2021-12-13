@@ -88,6 +88,8 @@ def create_plot(data):
                                      marker=dict(color='Red', size=10, line=dict(color='MediumPurple', width=3))))
 
         fig.update_layout(legend_orientation="h",
+                          paper_bgcolor='rgba(0,0,0,0)',
+                          plot_bgcolor='rgba(0,0,0,0)',
                           title=dict(text=" и ".join(mcc.split(", ")[:2]),
                                      xanchor="center",
                                      x=0.5,
@@ -100,7 +102,6 @@ def create_plot(data):
         print(mcc)
         fig.write_image(f"mcc_graphs/{mcc.replace('/', '|')}.png")
         # fig.write_image(f"{mcc.replace('/', '|')}.png")
-
 
 
 create_plot(data)
