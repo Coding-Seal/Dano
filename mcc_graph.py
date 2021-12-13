@@ -98,10 +98,9 @@ def create_plot(data):
                           margin=dict(l=0, r=0, t=25, b=0))
         fig.update_traces(hoverinfo="all", hovertemplate="Аргумент: %{x}<br>Функция: %{y}")
         print(mcc)
-        # fig.write_image(f"mcc_graphs/{mcc.replace('/', '|')}.png")
+        fig.write_image(f"mcc_graphs/{mcc.replace('/', '|')}.png")
         # fig.write_image(f"{mcc.replace('/', '|')}.png")
-        fig.show()
-        break
+
 
 
 create_plot(data)
