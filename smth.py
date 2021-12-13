@@ -8,16 +8,23 @@ mcc = pd.read_csv("mcc_code.csv", sep=";", encoding="Windows-1251")
 mcc = dict(zip(mcc["mcc"], mcc["значение mcc"]))
 
 data["code"] = data["code"].replace(mcc)
-print(data[data["code"] == "Авиалинии, авиакомпании"][["transaction_amt", "day_time"]])
+# print(data[data["code"] == "Авиалинии, авиакомпании"][["transaction_amt", "day_time"]])
+# i = 0
 for code in data["code"].unique():
-    if len(data[data["code"] == code]) < 10:
-        if data[data["code"] == code]["transaction_amt"].sum() >= 100000:
-            print(code, data[data["code"] == code]["transaction_amt"].sum())
+    if len(data[data["code"] == code]) < 20:
+
+        # i+=1
+        #
+        # if data[data["code"] == code]["transaction_amt"].sum() >= 200000:
+        #     print(code, data[data["code"] == code]["transaction_amt"].sum())
         data = data[data['code'] != code]
 
+# print(data[data["code"]=="Аэрофлот"][["transaction_amt", "day_time","customer_id"]].reset_index())
+# print(i)
+#
 data = data.reset_index()
 data = data[["online_transaction_flg", "code", "category", "transaction_amt", "customer_id", "day_time"]]
-# data.to_csv("final.csv",sep = ";")
+data.to_csv("final.csv",sep = ";")
 
 # week = ("Понедельник ", "Вторник ", "Среда ", "Четверг ", "Пятница ", "Суббота ", "Воскресенье ")
 #
