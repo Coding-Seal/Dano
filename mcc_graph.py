@@ -75,9 +75,9 @@ def create_plot(data):
         if np.size(x_offline):
             fig.add_trace(go.Scatter(x=key_day, y=model_offline.predict(key), name="offline_trend",
                                      mode='lines+markers',
-                                     marker=dict(color='LightSkyBlue')))
+                                     marker=dict(color='Blue')))
             fig.add_trace(go.Scatter(x=offline["day_time"], y=offline["transaction_amt"], mode='markers', name='',
-                                     marker=dict(color='LightSkyBlue', size=10,
+                                     marker=dict(color='Blue', size=10,
                                                  line=dict(color='MediumPurple', width=3))))
         # online graph
         if np.size(x_online):
@@ -102,6 +102,9 @@ def create_plot(data):
         print(mcc)
         fig.write_image(f"mcc_graphs/{mcc.replace('/', '|')}.png")
         # fig.write_image(f"{mcc.replace('/', '|')}.png")
+        # fig.show()
+        # break
+
 
 
 create_plot(data)

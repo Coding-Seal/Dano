@@ -11,11 +11,11 @@ mcc = dict(zip(mcc["mcc"], mcc["значение mcc"]))
 
 data["code"] = data["code"].replace(mcc)
 # print(data[data["code"] == "Авиалинии, авиакомпании"][["transaction_amt", "day_time"]])
-# i = 0
+i = 0
 for code in data["code"].unique():
     if len(data[data["code"] == code]) < 20:
 
-        # i+=1
+        i+=1
         #
         # if data[data["code"] == code]["transaction_amt"].sum() >= 200000:
         #     print(code, data[data["code"] == code]["transaction_amt"].sum())
