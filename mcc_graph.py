@@ -8,10 +8,13 @@ from baskets import kras
 data = pd.read_csv("final.csv", sep=";")
 
 
-def quantile_outliers(sample, q25, q75):
-    more = sample["transaction_amt"] >= q25 - 1.5 * (q75 - q25)
-    less = sample["transaction_amt"] <= q75 + 1.5 * (q75 - q25)
-    return sample[more & less]
+def quantile_outliers(dataframe, column: str):
+    """Deletes outliers form dataframe {sample} using Tukey's fences. Returns dataframe"""
+    q25 = dataframe[column].quantile(0.25)
+    q75 = dataframe[column].quantile(0.75)
+    more = dataframe[column] >= q25 - 1.5 * (q75 - q25)
+    less = dataframe[column] <= q75 + 1.5 * (q75 - q25)
+    return dataframe[more & less]
 
 
 def data_time(category_data, category, normalize=True):
@@ -21,22 +24,21 @@ def data_time(category_data, category, normalize=True):
                                    "online_transaction_flg", "day_time"]]
     online = category_data[category_data["online_transaction_flg"] == "online"]
     offline = category_data[category_data["online_transaction_flg"] == "offline"]
-    online_quant75 = online.quantile(0.75).to_dict()["transaction_amt"]
-    online_quant25 = online.quantile(0.25).to_dict()["transaction_amt"]
-    offline_quant75 = offline.quantile(0.75).to_dict()["transaction_amt"]
-    offline_quant25 = offline.quantile(0.25).to_dict()["transaction_amt"]
 
     if normalize:
         # # online = online[(np.abs(stats.zscore(online["transaction_amt"])) < 3)]
         # # offline = offline[(np.abs(stats.zscore(offline["transaction_amt"])) < 3)]
-        online = quantile_outliers(online, online_quant25, online_quant75)
-        offline = quantile_outliers(offline, offline_quant25, offline_quant75)
-
+        online = quantile_outliers(online, "transaction_amt")
+        offline = quantile_outliers(offline, "transaction_amt")
+    if online.code.count()+offline.code.count() < 100:
+        return 0
     online = online.groupby("day_time").sum().reset_index()
     offline = offline.groupby("day_time").sum().reset_index()
 
+
     online["online_transaction_flg"] = np.ones(len(online))
     offline["online_transaction_flg"] = np.zeros(len(offline))
+
     category_data = pd.concat([online, offline])
     category_data.sort_values("day_time", key=kras)
     return category_data
@@ -58,6 +60,8 @@ def create_plot(data):
 
     for mcc in data.code.unique():
         data_mcc = data_time(data[data["code"] == mcc], mcc, normalize=True)
+        if data_mcc is 0:
+            continue
         offline = data_mcc[data_mcc["online_transaction_flg"] == 0].sort_values(by="day_time", key=kras)
         online = data_mcc[data_mcc["online_transaction_flg"] == 1].sort_values(by="day_time", key=kras)
         x_offline = offline["day_time"].replace(day).values.reshape(len(offline["day_time"]), 1)
@@ -65,6 +69,7 @@ def create_plot(data):
 
         x_online = online["day_time"].replace(day).values.reshape(len(online["day_time"]), 1)
         y_online = online["transaction_amt"].values
+
         if np.size(x_offline):
             model_offline = LinearRegression().fit(x_offline, y_offline)
         if np.size(x_online):
@@ -72,6 +77,7 @@ def create_plot(data):
 
         fig = go.Figure()
         # offline graph
+
         if np.size(x_offline):
             fig.add_trace(go.Scatter(x=key_day, y=model_offline.predict(key), name="offline_trend",
                                      mode='lines+markers',
@@ -88,8 +94,8 @@ def create_plot(data):
                                      marker=dict(color='Red', size=10, line=dict(color='MediumPurple', width=3))))
 
         fig.update_layout(legend_orientation="h",
-                          paper_bgcolor='rgba(0,0,0,0)',
-                          plot_bgcolor='rgba(0,0,0,0)',
+                          paper_bgcolor='#fff',
+                          plot_bgcolor='#fff',
                           title=dict(text=" и ".join(mcc.split(", ")[:2]),
                                      xanchor="center",
                                      x=0.5,
@@ -100,9 +106,9 @@ def create_plot(data):
                           margin=dict(l=0, r=0, t=25, b=0))
         fig.update_traces(hoverinfo="all", hovertemplate="Аргумент: %{x}<br>Функция: %{y}")
         print(mcc)
-        fig.write_image(f"mcc_graphs/{mcc.replace('/', '|')}.png")
-        # fig.write_image(f"{mcc.replace('/', '|')}.png")
-        # fig.show()
+        # fig.write_image(f"mcc_graphs/{mcc.replace('/', '|')}.png")
+        fig.write_image(f"{mcc.replace('/', '|')}.png")
+        # # fig.show()
         # break
 
 
