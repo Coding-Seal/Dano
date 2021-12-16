@@ -3,7 +3,18 @@ import numpy as np
 from sklearn.linear_model import LinearRegression
 import plotly.graph_objs as go
 from scipy import stats
-from baskets import kras
+
+weak = dict(Понедельник=1, Вторник=2, Среда=3, Четверг=4, Пятница=5, Суббота=6, Воскресенье=7)
+
+
+# def kras(smth):
+#     weak = dict(Понедельник=1, Вторник=2, Среда=3, Четверг=4, Пятница=5, Суббота=6, Воскресенье=7)
+#     return smth.replace(weak)
+
+
+week1 = {}
+for key, item in weak.items():
+    week1[str(item)] = key
 
 data = pd.read_csv("final.csv", sep=";")
 shorts = {'Воскресенье Вечер': "Вс В", 'Воскресенье День': "Вс Д", 'Воскресенье Ночь': "Вс Н",
@@ -29,7 +40,7 @@ def data_time(category_data, category, normalize=True):
     """Expected data about one category"""
 
     category_data = category_data[["code", "transaction_amt",
-                                   "online_transaction_flg", "day_time"]]
+                                   "online_transaction_flg", "day_of_week"]]
     online = category_data[category_data["online_transaction_flg"] == "online"]
     offline = category_data[category_data["online_transaction_flg"] == "offline"]
 
@@ -40,14 +51,17 @@ def data_time(category_data, category, normalize=True):
         offline = quantile_outliers(offline, "transaction_amt")
     if online.code.count() + offline.code.count() < 100:
         return 0
-    online = online.groupby("day_time").sum().reset_index()
-    offline = offline.groupby("day_time").sum().reset_index()
+    online = online.groupby("day_of_week").sum().reset_index()
+    offline = offline.groupby("day_of_week").sum().reset_index()
 
     online["online_transaction_flg"] = np.ones(len(online))
     offline["online_transaction_flg"] = np.zeros(len(offline))
-
+    # print(online)
+    # print(offline)
     category_data = pd.concat([online, offline])
-    category_data.sort_values("day_time", key=kras)
+    # print(category_data)
+    category_data.sort_values("day_of_week")
+    # print(category_data)
     return category_data
 
 
@@ -60,14 +74,9 @@ def create_plot(data):
                 ('Суббота Утро', 21), ('Суббота День', 22), ('Суббота Вечер', 23), ('Суббота Ночь', 24),
                 ('Воскресенье Утро', 25), ('Воскресенье День', 26), ('Воскресенье Вечер', 27),
                 ('Воскресенье Ночь', 28)])
-    smth = {}
-    for  item , value in day.items():
-        smth[shorts[item]] = value
-    day = smth
 
-
-    key = [i for i in range(1, 29)]
-    key_day = day.keys()
+    key = [i for i in range(1, 8)]
+    key_day = weak.keys()
     key = pd.Series(key).values.reshape(len(key), 1)
     key_day = pd.Series(key_day)
 
@@ -75,30 +84,36 @@ def create_plot(data):
         data_mcc = data_time(data[data["code"] == mcc], mcc, normalize=True)
         if data_mcc is 0:
             continue
-        data_mcc["day_time"] = data_mcc["day_time"].replace(shorts)
+        # print(data_mcc.reset_index())
 
-
-        offline = data_mcc[data_mcc["online_transaction_flg"] == 0].sort_values(by="day_time", key=kras)
-        online = data_mcc[data_mcc["online_transaction_flg"] == 1].sort_values(by="day_time", key=kras)
-        x_offline = offline["day_time"].replace(day).values.reshape(len(offline["day_time"]), 1)
+        offline = data_mcc[data_mcc["online_transaction_flg"] == 0].sort_values(by="day_of_week",)
+        online = data_mcc[data_mcc["online_transaction_flg"] == 1].sort_values(by="day_of_week",)
+        x_offline = offline["day_of_week"].replace(weak).values.reshape(len(offline["day_of_week"]), 1)
         y_offline = offline["transaction_amt"].values
 
-        x_online = online["day_time"].replace(day).values.reshape(len(online["day_time"]), 1)
+        x_online = online["day_of_week"].replace(weak).values.reshape(len(online["day_of_week"]), 1)
         y_online = online["transaction_amt"].values
+        # print(data_mcc)
 
         if np.size(x_offline):
             model_offline = LinearRegression().fit(x_offline, y_offline)
         if np.size(x_online):
             model_online = LinearRegression().fit(x_online, y_online)
 
+        for name, value in weak.items():
+            online['day_of_week'] = online["day_of_week"].replace(value, name)
+            offline['day_of_week'] = offline["day_of_week"].replace(value, name)
+
+
         fig = go.Figure()
         # offline graph
+        # print(offline)
 
         if np.size(x_offline):
             fig.add_trace(go.Scatter(x=key_day, y=model_offline.predict(key), name="offline_trend",
                                      mode='lines+markers',
                                      marker=dict(color='Blue')))
-            fig.add_trace(go.Scatter(x=offline["day_time"], y=offline["transaction_amt"], mode='markers', name='',
+            fig.add_trace(go.Scatter(x=offline["day_of_week"], y=offline["transaction_amt"], mode='markers', name='',
                                      marker=dict(color='Blue', size=10,
                                                  line=dict(color='MediumPurple', width=3))))
         # online graph
@@ -106,7 +121,7 @@ def create_plot(data):
             fig.add_trace(go.Scatter(x=key_day, y=model_online.predict(key), name="online_trend",
                                      mode='lines+markers',
                                      marker=dict(color='Red')))
-            fig.add_trace(go.Scatter(x=online["day_time"], y=online["transaction_amt"], mode='markers', name='',
+            fig.add_trace(go.Scatter(x=online["day_of_week"], y=online["transaction_amt"], mode='markers', name='',
                                      marker=dict(color='Red', size=10, line=dict(color='MediumPurple', width=3))))
 
         fig.update_layout(legend_orientation="h",
@@ -122,11 +137,8 @@ def create_plot(data):
                           hovermode="x",
                           margin=dict(l=0, r=0, t=25, b=0))
         fig.update_traces(hoverinfo="all", hovertemplate="Аргумент: %{x}<br>Функция: %{y}")
-        print(mcc)
-        fig.write_image(f"mcc_graphs/{mcc.replace('/', '|')}.png")
-        # fig.write_image(f"{mcc.replace('/', '|')}.png")
-        # # fig.show()
-        # break
+        fig.write_image(f"mcc_week/{mcc.replace('/', '|')}.png")
+        # # fig.write_image(f"{mcc.replace('/', '|')}.png")
 
 
 create_plot(data)

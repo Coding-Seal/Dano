@@ -13,7 +13,7 @@ data["code"] = data["code"].replace(mcc)
 # print(data[data["code"] == "Авиалинии, авиакомпании"][["transaction_amt", "day_time"]])
 i = 0
 for code in data["code"].unique():
-    if len(data[data["code"] == code]) < 20:
+    if len(data[data["code"] == code]) < 100:
 
         i+=1
         #
@@ -25,12 +25,13 @@ for code in data["code"].unique():
 print(i)
 #
 data = data.reset_index()
-data = data[["online_transaction_flg", "code", "category", "transaction_amt", "customer_id", "day_time"]]
-# data.to_csv("final.csv",sep = ";")
-print(len(data_i["code"].unique()))
-print(len(m_data["code"].unique()))
-
-print(len(data["code"].unique()))
+data = data[["online_transaction_flg", "code", "category", "transaction_amt",
+             "customer_id", "day_time", "day_of_week", "time_of_day"]]
+data.to_csv("final.csv",sep = ";")
+# print(len(data_i["code"].unique()))
+# print(len(m_data["code"].unique()))
+#
+# print(len(data["code"].unique()))
 
 # week = ("Понедельник ", "Вторник ", "Среда ", "Четверг ", "Пятница ", "Суббота ", "Воскресенье ")
 #
