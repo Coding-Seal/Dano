@@ -27,6 +27,7 @@ mcc_list = [5814,
             4121,
             5814,
             5411,
+7832
             ]
 
 our_code = data['code'].isin(mcc_list)

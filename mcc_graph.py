@@ -48,7 +48,6 @@ def data_time(category_data, category, normalize=True):
     return category_data
 
 
-mcc_list = [5814, 9402, 7230, 5200, 5311, 7999, 9399, 5651, 4131, 5993, 5921, 3423, 5541, 7512]
 
 
 def create_plot(data):

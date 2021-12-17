@@ -2,8 +2,6 @@ import pandas as pd
 import numpy as np
 from sklearn.linear_model import LinearRegression
 import plotly.graph_objs as go
-from scipy import stats
-from baskets import kras
 
 data = pd.read_csv("final.csv", sep=";")
 shorts = {'Воскресенье Вечер': "Вс В", 'Воскресенье День': "Вс Д", 'Воскресенье Ночь': "Вс Н",
@@ -16,6 +14,15 @@ shorts = {'Воскресенье Вечер': "Вс В", 'Воскресень�
           'Четверг Вечер': "Чт В", 'Четверг День': "Чт Д", 'Четверг Ночь': "Чт Н", 'Четверг Утро': "Чт У"}
 
 
+def kras(smth):
+    a = {'Пн У': 1, 'Вт У': 2, 'Ср У': 3, 'Чт У': 4, 'Пт У': 5, 'Сб У': 6, 'Вс У': 7, 'Пн Д': 8, 'Вт Д': 9, 'Ср Д': 10,
+         'Чт Д': 11, 'Пт Д': 12, 'Сб Д': 13, 'Вс Д': 14, 'Пн В': 15, 'Вт В': 16, 'Ср В': 17, 'Чт В': 18, 'Пт В': 19,
+         'Сб В': 20, 'Вс В': 21, 'Пн Н': 22, 'Вт Н': 23, 'Ср Н': 24, 'Чт Н': 25, 'Пт Н': 26, 'Сб Н': 27, 'Вс Н': 28}
+
+    smth = smth.replace(a)
+    return smth
+
+
 def quantile_outliers(dataframe, column: str):
     """Deletes outliers form dataframe {sample} using Tukey's fences. Returns dataframe"""
     q25 = dataframe[column].quantile(0.25)
@@ -25,7 +32,7 @@ def quantile_outliers(dataframe, column: str):
     return dataframe[more & less]
 
 
-def data_time(category_data,):
+def data_time(category_data, ):
     """Expected data about one category"""
 
     category_data = quantile_outliers(category_data[["code", "transaction_amt",
@@ -37,32 +44,25 @@ def data_time(category_data,):
 
 
 def create_plot(data):
-    day = dict([('Понедельник Утро', 1), ('Понедельник День', 2), ('Понедельник Вечер', 3), ('Понедельник Ночь', 4),
-                ('Вторник Утро', 5), ('Вторник День', 6), ('Вторник Вечер', 7), ('Вторник Ночь', 8),
-                ('Среда Утро', 9), ('Среда День', 10), ('Среда Вечер', 11), ('Среда Ночь', 12),
-                ('Четверг Утро', 13), ('Четверг День', 14), ('Четверг Вечер', 15), ('Четверг Ночь', 16),
-                ('Пятница Утро', 17), ('Пятница День', 18), ('Пятница Вечер', 19), ('Пятница Ночь', 20),
-                ('Суббота Утро', 21), ('Суббота День', 22), ('Суббота Вечер', 23), ('Суббота Ночь', 24),
-                ('Воскресенье Утро', 25), ('Воскресенье День', 26), ('Воскресенье Вечер', 27),
-                ('Воскресенье Ночь', 28)])
-    smth = {}
-    for item, value in day.items():
-        smth[shorts[item]] = value
-    day = smth
+    a = {'Пн У': 1, 'Вт У': 2, 'Ср У': 3, 'Чт У': 4, 'Пт У': 5, 'Сб У': 6, 'Вс У': 7, 'Пн Д': 8, 'Вт Д': 9, 'Ср Д': 10,
+         'Чт Д': 11, 'Пт Д': 12, 'Сб Д': 13, 'Вс Д': 14, 'Пн В': 15, 'Вт В': 16, 'Ср В': 17, 'Чт В': 18, 'Пт В': 19,
+         'Сб В': 20, 'Вс В': 21, 'Пн Н': 22, 'Вт Н': 23, 'Ср Н': 24, 'Чт Н': 25, 'Пт Н': 26, 'Сб Н': 27, 'Вс Н': 28}
 
     key = [i for i in range(1, 29)]
-    key_day = day.keys()
+    key_day = a.keys()
     key = pd.Series(key).values.reshape(len(key), 1)
     key_day = pd.Series(key_day)
     for mcc in data.code.unique():
-        print(mcc)
 
         data_mcc = data_time(data[data["code"] == mcc])
         if data_mcc is 0:
             continue
         data_mcc["day_time"] = data_mcc["day_time"].replace(shorts)
+        data_mcc = data_mcc.sort_values("day_time", key=kras)
+        # print(data_mcc.day_time)
 
-        x_data_mcc = data_mcc["day_time"].replace(day).values.reshape(len(data_mcc["day_time"]), 1)
+        x_data_mcc = kras(data_mcc["day_time"]).values.reshape(len(data_mcc["day_time"]), 1)
+        # print(x_data_mcc)
         y_data_mcc = data_mcc["transaction_amt"].values
 
         if np.size(x_data_mcc):
@@ -97,7 +97,7 @@ def create_plot(data):
         fig.update_traces(hoverinfo="all", hovertemplate="Аргумент: %{x}<br>Функция: %{y}")
         fig.update_yaxes(title="Средняя транзакция")
         print(mcc)
-        fig.write_image(f"mcc_means/{mcc.replace('/', '|')}.png")
+        fig.write_image(f"mcc_days/{mcc.replace('/', '|')}.png")
         # fig.write_image(f"{mcc.replace('/', '|')}.png")
         # fig.show()
 

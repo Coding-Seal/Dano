@@ -1,21 +1,8 @@
-import pandas as pd
+a = {'Вс В': 21, 'Вс Д': 14, 'Вс Н': 28, 'Вс У': 7, 'Вт В': 16, 'Вт Д': 9, 'Вт Н': 23, 'Вт У': 2, 'Пн В': 15,
+     'Пн Д': 8, 'Пн Н': 22, 'Пн У': 1, 'Пт В': 19, 'Пт Д': 12, 'Пт Н': 26, 'Пт У': 5, 'Ср В': 17, 'Ср Д': 10,
+     'Ср Н': 24, 'Ср У': 3, 'Сб В': 20, 'Сб Д': 13, 'Сб Н': 27, 'Сб У': 6, 'Чт В': 18, 'Чт Д': 11, 'Чт Н': 25,
+     'Чт У': 4}
+a = [(i, a[i]) for i in a]
 
-a = 0.05
-data = pd.read_csv("tink.csv")
-
-# v = data.groupby(["code","transaction_amt"]).count().reset_index()
-# print(v.code)
-
-v = data.groupby("code").count().reset_index()
-v = v.sort_values("transaction_amt")
-# print(v)
-
-
-s = v["transaction_amt"].sum()
-for i in range(len(v)+2):
-    k = v["transaction_amt"][:i].sum()/s
-    if k >= 1 - a:
-        print(i)
-        break
-print(v[179:])
-print(7155/s)
+a = dict(sorted(a, key= lambda b:b[1]))
+print(a)
