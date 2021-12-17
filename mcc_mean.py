@@ -91,6 +91,7 @@ def create_plot(data):
         # online graph
 
         mcc = " и ".join(mcc.split(", ")[:2])
+        mcc = mcc.split("—")[0]
         fig.update_layout(legend_orientation="h",
                           paper_bgcolor='#fff',
                           plot_bgcolor='#fff',
