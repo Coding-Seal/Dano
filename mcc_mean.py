@@ -110,12 +110,12 @@ def create_plot(data):
                                      marker=dict(color='Red')))
             fig.add_trace(go.Scatter(x=online["day_time"], y=online["transaction_amt"], mode='markers', name='',
                                      marker=dict(color='Red', size=10, line=dict(color='MediumPurple', width=3))))
-
+        mcc = " и ".join(mcc.split(", ")[:2])
         fig.update_layout(legend_orientation="h",
                           paper_bgcolor='#fff',
                           plot_bgcolor='#fff',
                           font_size=17,
-                          title=dict(text=" и ".join(mcc.split(", ")[:2]),
+                          title=dict(text=mcc.split("(")[0],
                                      xanchor="center",
                                      x=0.5,
                                      y=0.99),
