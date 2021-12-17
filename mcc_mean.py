@@ -5,8 +5,6 @@ import plotly.graph_objs as go
 from scipy import stats
 from baskets import kras
 
-
-
 data = pd.read_csv("final.csv", sep=";")
 shorts = {'Воскресенье Вечер': "Вс В", 'Воскресенье День': "Вс Д", 'Воскресенье Ночь': "Вс Н",
           'Воскресенье Утро': "Вс У", 'Вторник Вечер': "Вт В", 'Вторник День': "Вт Д", 'Вторник Ночь': "Вт Н",
@@ -30,26 +28,18 @@ def quantile_outliers(dataframe, column: str):
 def data_time(category_data, category, normalize=True):
     """Expected data about one category"""
 
-    category_data = category_data[["code", "transaction_amt",
-                                   "online_transaction_flg", "day_time"]]
-    online = category_data[category_data["online_transaction_flg"] == "online"]
-    offline = category_data[category_data["online_transaction_flg"] == "offline"]
+    category_data = quantile_outliers(category_data[["code", "transaction_amt",
+                                                     "online_transaction_flg", "day_time"]], "transaction_amt")
+    category_data = category_data.groupby("day_time").mean().reset_index()
+    # online = category_data[category_data["online_transaction_flg"] == "online"]
+    # offline = category_data[category_data["online_transaction_flg"] == "offline"]
 
-    if normalize:
-        # # online = online[(np.abs(stats.zscore(online["transaction_amt"])) < 3)]
-        # # offline = offline[(np.abs(stats.zscore(offline["transaction_amt"])) < 3)]
-        online = quantile_outliers(online, "transaction_amt")
-        offline = quantile_outliers(offline, "transaction_amt")
-    if online.code.count() + offline.code.count() < 100:
-        print(category)
-        return 0
-    online = online.groupby("day_time").mean().reset_index()
-    offline = offline.groupby("day_time").mean().reset_index()
+    # online = online.groupby("day_time").mean().reset_index()
+    # offline = offline.groupby("day_time").mean().reset_index()
 
-    online["online_transaction_flg"] = np.ones(len(online))
-    offline["online_transaction_flg"] = np.zeros(len(offline))
+    # online["online_transaction_flg"] = np.ones(len(online))
+    # offline["online_transaction_flg"] = np.zeros(len(offline))
 
-    category_data = pd.concat([online, offline])
     category_data.sort_values("day_time", key=kras)
     return category_data
 
@@ -80,36 +70,26 @@ def create_plot(data):
             continue
         data_mcc["day_time"] = data_mcc["day_time"].replace(shorts)
 
-        offline = data_mcc[data_mcc["online_transaction_flg"] == 0].sort_values(by="day_time", key=kras)
-        online = data_mcc[data_mcc["online_transaction_flg"] == 1].sort_values(by="day_time", key=kras)
-        x_offline = offline["day_time"].replace(day).values.reshape(len(offline["day_time"]), 1)
-        y_offline = offline["transaction_amt"].values
+        # offline = data_mcc[data_mcc["online_transaction_flg"] == 0].sort_values(by="day_time", key=kras)
+        # online = data_mcc[data_mcc["online_transaction_flg"] == 1].sort_values(by="day_time", key=kras)
+        x_data_mcc = data_mcc["day_time"].replace(day).values.reshape(len(data_mcc["day_time"]), 1)
+        y_data_mcc = data_mcc["transaction_amt"].values
 
-        x_online = online["day_time"].replace(day).values.reshape(len(online["day_time"]), 1)
-        y_online = online["transaction_amt"].values
-
-        if np.size(x_offline):
-            model_offline = LinearRegression().fit(x_offline, y_offline)
-        if np.size(x_online):
-            model_online = LinearRegression().fit(x_online, y_online)
+        if np.size(x_data_mcc):
+            model_data_mcc = LinearRegression().fit(x_data_mcc, y_data_mcc)
 
         fig = go.Figure()
         # offline graph
 
-        if np.size(x_offline):
-            fig.add_trace(go.Scatter(x=key_day, y=model_offline.predict(key), name="offline_trend",
-                                     mode='lines+markers',
-                                     marker=dict(color='Blue')))
-            fig.add_trace(go.Scatter(x=offline["day_time"], y=offline["transaction_amt"], mode='markers', name='',
-                                     marker=dict(color='Blue', size=10,
-                                                 line=dict(color='MediumPurple', width=3))))
-        # online graph
-        if np.size(x_online):
-            fig.add_trace(go.Scatter(x=key_day, y=model_online.predict(key), name="online_trend",
+        if np.size(x_data_mcc):
+            fig.add_trace(go.Scatter(x=key_day, y=model_data_mcc.predict(key), name="trend",
                                      mode='lines+markers',
                                      marker=dict(color='Red')))
-            fig.add_trace(go.Scatter(x=online["day_time"], y=online["transaction_amt"], mode='markers', name='',
-                                     marker=dict(color='Red', size=10, line=dict(color='MediumPurple', width=3))))
+            fig.add_trace(go.Scatter(x=data_mcc["day_time"], y=data_mcc["transaction_amt"], mode='markers', name='',
+                                     marker=dict(color='Red', size=10,
+                                                 line=dict(color='MediumPurple', width=3))))
+        # online graph
+
         mcc = " и ".join(mcc.split(", ")[:2])
         fig.update_layout(legend_orientation="h",
                           paper_bgcolor='#fff',
@@ -128,8 +108,10 @@ def create_plot(data):
         print(mcc)
         fig.write_image(f"mcc_means/{mcc.replace('/', '|')}.png")
         # fig.write_image(f"{mcc.replace('/', '|')}.png")
+        # fig.show()
+
         # break
+
 
 print(1)
 create_plot(data)
-
