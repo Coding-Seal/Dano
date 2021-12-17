@@ -78,18 +78,18 @@ def create_plot(data):
         data_mcc["day_time"] = data_mcc["day_time"].replace(shorts)
 
 
-        offline = data_mcc[data_mcc["online_transaction_flg"] == 0].sort_values(by="day_time", key=kras)
-        online = data_mcc[data_mcc["online_transaction_flg"] == 1].sort_values(by="day_time", key=kras)
+        offline = data_mcc.sort_values(by="day_time", key=kras)
+        # online = data_mcc[data_mcc["online_transaction_flg"] == 1].sort_values(by="day_time", key=kras)
         x_offline = offline["day_time"].replace(day).values.reshape(len(offline["day_time"]), 1)
         y_offline = offline["transaction_amt"].values
 
-        x_online = online["day_time"].replace(day).values.reshape(len(online["day_time"]), 1)
-        y_online = online["transaction_amt"].values
+        # x_online = online["day_time"].replace(day).values.reshape(len(online["day_time"]), 1)
+        # y_online = online["transaction_amt"].values
 
         if np.size(x_offline):
             model_offline = LinearRegression().fit(x_offline, y_offline)
-        if np.size(x_online):
-            model_online = LinearRegression().fit(x_online, y_online)
+        # if np.size(x_online):
+        #     model_online = LinearRegression().fit(x_online, y_online)
 
         fig = go.Figure()
         # offline graph
